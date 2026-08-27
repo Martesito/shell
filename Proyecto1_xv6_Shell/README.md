@@ -6,7 +6,7 @@ Implementar un interprete de comandos de espacio de usuario para xv6-riscv,
 capaz de ejecutar comandos simples con argumentos, redireccionar entrada y
 salida mediante `<` y `>`, y conectar comandos mediante tuberias `|`.
 
-El programa se llama `mish` y su fuente es `user/mish.c`.
+El programa se llama `sh` y su fuente es `user/sh.c`.
 
 ## Relacion con la presentacion
 
@@ -25,15 +25,15 @@ respectivamente, entrada estandar, salida estandar y error estandar.
 
 ## Instalacion en xv6
 
-1. Copiar `mish.c` a:
+1. Copiar `sh.c` a:
 
-   `user/mish.c`
+   `user/sh.c`
 
 2. Abrir el `Makefile` de xv6.
 
 3. En la lista `UPROGS`, agregar:
 
-   `_mish\`
+   `_sh\`
 
    respetando el formato de los demas programas.
 
@@ -43,7 +43,7 @@ respectivamente, entrada estandar, salida estandar y error estandar.
 
 5. En el prompt de xv6 escribir:
 
-   `mish`
+   `sh`
 
 ## Arquitectura
 
@@ -117,7 +117,7 @@ se representa como una estructura recursiva de tuberias:
 Esto permite reutilizar la misma logica para cualquier numero de etapas,
 dentro del limite de recursos de xv6.
 
-## Decisiones de diseno
+## Decisiones de diseño
 
 - Se acepta `<`, `>` y `|` sin exigir espacios alrededor de ellos.
 - Se admite redireccion antes o despues de los argumentos.
