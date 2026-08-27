@@ -1,0 +1,236 @@
+Proyecto 1 - xv6 Shell
+Archivo de pruebas funcionales
+
+Programa: sh
+Fuente: user/sh.c
+Entorno: xv6-riscv sobre QEMU
+Uso: compilar con make qemu y escribir "sh" en el prompt de xv6.
+
+Ejecutar cada linea en el prompt "sh> " y verificar el resultado.
+
+
+---------- PREPARACION ----------
+
+1. Arrancar xv6.
+2. En el prompt de xv6 ejecutar:
+
+sh
+
+3. Ejecutar las pruebas en orden.
+
+
+---------- PRUEBA 1: comando simple ----------
+
+echo hola mundo desde mi shell
+
+Esperado:
+Imprime "hola mundo desde mi shell".
+
+Verifica:
+fork, exec y wait.
+
+
+---------- PRUEBA 2: comando sin argumentos ----------
+
+ls
+
+Esperado:
+Listado del directorio actual de xv6.
+
+Verifica:
+Comando sin argumentos.
+
+
+---------- PRUEBA 3: redireccion de salida ----------
+
+echo alfa beta gamma > p_salida.txt
+cat p_salida.txt
+
+Esperado:
+El primer comando no imprime su texto en la consola.
+El segundo muestra:
+alfa beta gamma
+
+Verifica:
+close(1) + open(O_CREATE|O_WRONLY|O_TRUNC) en el proceso que ejecuta el comando.
+
+
+---------- PRUEBA 4: redireccion de entrada ----------
+
+cat < p_salida.txt
+
+Esperado:
+Muestra:
+alfa beta gamma
+
+Verifica:
+close(0) + open(O_RDONLY).
+
+
+---------- PRUEBA 5: redireccion de entrada hacia wc ----------
+
+wc < p_salida.txt
+
+Esperado:
+Muestra el conteo de lineas, palabras y bytes del archivo.
+
+Para el contenido "alfa beta gamma\n", el resultado esperado es:
+1 3 16 p_salida.txt
+
+Verifica:
+La entrada estandar del comando queda conectada al archivo.
+
+
+---------- PRUEBA 6: entrada y salida a la vez ----------
+
+cat < p_salida.txt > p_copia.txt
+cat p_copia.txt
+
+Esperado:
+El primer comando no imprime el contenido.
+El segundo muestra:
+alfa beta gamma
+
+Verifica:
+Las dos redirecciones se aplican al mismo comando.
+
+
+---------- PRUEBA 7: tuberia simple ----------
+
+cat p_salida.txt | wc
+
+Esperado:
+El conteo corresponde al contenido de p_salida.txt y cat no imprime directamente en pantalla.
+
+Para el archivo creado en la prueba 3:
+1 3 16
+
+Verifica:
+pipe, dos procesos, dup y cierre correcto de los extremos.
+
+
+---------- PRUEBA 8: tuberia con grep ----------
+
+ls | grep p_salida
+
+Esperado:
+Aparece la entrada que contiene "p_salida", por ejemplo:
+p_salida.txt
+
+Verifica:
+La salida de ls se convierte en la entrada de grep.
+
+
+---------- PRUEBA 9: tuberia con argumentos ----------
+
+echo uno dos tres | wc
+
+Esperado:
+1 linea y 3 palabras.
+El numero de bytes depende de los espacios y del salto de linea, pero para
+"uno dos tres\n" debe ser 13.
+
+Verifica:
+Argumentos + tuberia.
+
+
+---------- PRUEBA 10: comando inexistente ----------
+
+comando_que_no_existe
+
+Esperado:
+Un mensaje de error de exec y luego vuelve el prompt:
+sh>
+
+Verifica:
+exec falla solo en el hijo; el hijo termina con exit(1) y el shell sobrevive.
+
+
+---------- PRUEBA 11: archivo de entrada inexistente ----------
+
+cat < archivo_que_no_existe.txt
+
+Esperado:
+Mensaje de error de apertura y luego vuelve el prompt:
+sh>
+
+Verifica:
+Se comprueba el retorno de open antes de ejecutar el comando.
+
+
+---------- PRUEBA 12: el shell sigue funcionando ----------
+
+echo todas las pruebas terminaron
+
+Esperado:
+todas las pruebas terminaron
+
+Confirma:
+El interprete sobrevivio a los errores anteriores y conserva sus
+descriptores estandar.
+
+
+---------- PRUEBA 13: TUBERIA DE TRES ETAPAS ----------
+
+echo uno dos tres | wc | wc
+
+Esperado:
+La ultima etapa recibe la salida de la etapa anterior y produce un resultado.
+
+Verifica:
+Tuberias encadenadas y arbol de procesos.
+
+
+---------- PRUEBA 14: TUBERIA DE CUATRO ETAPAS ----------
+
+echo alfa beta gamma | grep beta | wc | wc
+
+Esperado:
+La cadena termina correctamente sin bloquearse.
+
+Verifica:
+Cierre correcto de todos los extremos de las tuberias.
+
+
+---------- PRUEBA 15: TUBERIA + REDIRECCION ----------
+
+cat < p_salida.txt | wc > p_wc.txt
+cat p_wc.txt
+
+Esperado:
+p_wc.txt contiene el conteo producido por wc.
+
+Verifica:
+La implementacion admite redireccion y tuberia en la misma linea.
+
+
+---------- PRUEBA 16: SOBRESCRITURA DE ARCHIVO ----------
+
+echo primera > p_sobrescribir.txt
+echo segunda > p_sobrescribir.txt
+cat p_sobrescribir.txt
+
+Esperado:
+segunda
+
+Verifica:
+O_TRUNC realmente reinicia el archivo antes de escribir.
+
+
+==================================================
+CRITERIOS DE ACEPTACION
+==================================================
+
+1. sh compila como programa de usuario de xv6.
+2. sh aparece en el filesystem de xv6 y puede ejecutarse escribiendo sh.
+3. Los comandos simples funcionan.
+4. Los argumentos funcionan.
+5. < funciona.
+6. > funciona.
+7. Las redirecciones no modifican los descriptores del shell padre.
+8. | funciona.
+9. Las tuberias de varias etapas funcionan.
+10. Un exec fallido no mata el shell.
+11. Una apertura fallida no mata el shell.
+12. Los extremos innecesarios de cada pipe se cierran.
+13. Las pruebas no dejan procesos esperando indefinidamente.
