@@ -179,6 +179,8 @@ parseexec(char **ps, char *es)
 
       *eq = 0;
 
+      if(*ps < es)
+        (*ps)++;
       {
         struct redircmd *rcmd = malloc(sizeof(*rcmd));
         memset(rcmd, 0, sizeof(*rcmd));
@@ -273,8 +275,10 @@ parsecmd(char *s)
 
   return cmd;
 }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winfinite-recursion"
 
-static void
+static void __attribute__((noinline))
 runcmd(struct cmd *cmd)
 {
   int p[2];
@@ -390,6 +394,7 @@ runcmd(struct cmd *cmd)
     exit(1);
   }
 }
+#pragma GCC diagnostic pop
 
 int
 main(void)
